@@ -33,7 +33,6 @@
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include "up-config.h"
-#include "up-polkit.h"
 #include "up-device-list.h"
 #include "up-device.h"
 #include "up-backend.h"
@@ -77,7 +76,6 @@ struct UpDaemonPrivate
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy;
 	UpConfig		*config;
-	UpPolkit		*polkit;
 	UpBackend		*backend;
 	UpDeviceList		*power_devices;
 	gboolean		 on_battery;
@@ -333,7 +331,6 @@ up_daemon_about_to_sleep (UpDaemon *daemon,
 {
 	GError *error;
 #ifdef ENABLE_DEPRECATED
-	PolkitSubject *subject = NULL;
 	UpDaemonPrivate *priv = daemon->priv;
 
 	/* already requested */
@@ -346,14 +343,6 @@ up_daemon_about_to_sleep (UpDaemon *daemon,
 		goto out;
 	}
 
-	subject = up_polkit_get_subject (priv->polkit, context);
-	if (subject == NULL)
-		goto out;
-
-	/* TODO: use another PolicyKit context? */
-	if (!up_polkit_check_auth (priv->polkit, subject, "org.freedesktop.upower.suspend", context))
-		goto out;
-
 	/* we've told the clients we're going down */
 	g_debug ("emitting sleeping");
 	g_signal_emit (daemon, signals[SIGNAL_SLEEPING], 0);
@@ -364,8 +353,6 @@ up_daemon_about_to_sleep (UpDaemon *daemon,
 
 	dbus_g_method_return (context, NULL);
 out:
-	if (subject != NULL)
-		g_object_unref (subject);
 	return TRUE;
 #else
 	/* just return an error */
@@ -518,7 +505,6 @@ up_daemon_suspend (UpDaemon *daemon, DBusGMethodInvocation *context)
 {
 	GError *error;
 #ifdef ENABLE_DEPRECATED
-	PolkitSubject *subject = NULL;
 	const gchar *command;
 	UpDaemonPrivate *priv = daemon->priv;
 
@@ -531,13 +517,6 @@ up_daemon_suspend (UpDaemon *daemon, DBusGMethodInvocation *context)
 		g_error_free (error);
 		goto out;
 	}
-
-	subject = up_polkit_get_subject (priv->polkit, context);
-	if (subject == NULL)
-		goto out;
-
-	if (!up_polkit_check_auth (priv->polkit, subject, "org.freedesktop.upower.suspend", context))
-		goto out;
 
 	/* already requested */
 	if (priv->about_to_sleep_id != 0) {
@@ -554,8 +533,6 @@ up_daemon_suspend (UpDaemon *daemon, DBusGMethodInvocation *context)
 	command = up_backend_get_suspend_command (priv->backend);
 	up_daemon_deferred_sleep (daemon, command, context);
 out:
-	if (subject != NULL)
-		g_object_unref (subject);
 	return TRUE;
 #else
 	/* just return an error */
@@ -574,31 +551,10 @@ out:
 gboolean
 up_daemon_suspend_allowed (UpDaemon *daemon, DBusGMethodInvocation *context)
 {
-	GError *error;
 #ifdef ENABLE_DEPRECATED
-	gboolean ret;
-	PolkitSubject *subject = NULL;
-	UpDaemonPrivate *priv = daemon->priv;
-
-	subject = up_polkit_get_subject (priv->polkit, context);
-	if (subject == NULL)
-		goto out;
-
-	error = NULL;
-	ret = up_polkit_is_allowed (priv->polkit, subject, "org.freedesktop.upower.suspend", &error);
-	if (error) {
-		dbus_g_method_return_error (context, error);
-		g_error_free (error);
-	}
-	else {
-		dbus_g_method_return (context, ret);
-	}
-
-out:
-	if (subject != NULL)
-		g_object_unref (subject);
 	return TRUE;
 #else
+        GError *error;
 	/* just return an error */
 	error = g_error_new_literal (UP_DAEMON_ERROR,
 				     UP_DAEMON_ERROR_GENERAL,
@@ -644,7 +600,6 @@ up_daemon_hibernate (UpDaemon *daemon, DBusGMethodInvocation *context)
 {
 	GError *error;
 #ifdef ENABLE_DEPRECATED
-	PolkitSubject *subject = NULL;
 	const gchar *command;
 	UpDaemonPrivate *priv = daemon->priv;
 
@@ -679,13 +634,6 @@ up_daemon_hibernate (UpDaemon *daemon, DBusGMethodInvocation *context)
 		goto out;
 	}
 
-	subject = up_polkit_get_subject (priv->polkit, context);
-	if (subject == NULL)
-		goto out;
-
-	if (!up_polkit_check_auth (priv->polkit, subject, "org.freedesktop.upower.hibernate", context))
-		goto out;
-
 	/* already requested */
 	if (priv->about_to_sleep_id != 0) {
 		error = g_error_new (UP_DAEMON_ERROR,
@@ -701,8 +649,6 @@ up_daemon_hibernate (UpDaemon *daemon, DBusGMethodInvocation *context)
 	command = up_backend_get_hibernate_command (priv->backend);
 	up_daemon_deferred_sleep (daemon, command, context);
 out:
-	if (subject != NULL)
-		g_object_unref (subject);
 	return TRUE;
 #else
 	/* just return an error */
@@ -721,31 +667,10 @@ out:
 gboolean
 up_daemon_hibernate_allowed (UpDaemon *daemon, DBusGMethodInvocation *context)
 {
-	GError *error;
 #ifdef ENABLE_DEPRECATED
-	gboolean ret;
-	PolkitSubject *subject = NULL;
-	UpDaemonPrivate *priv = daemon->priv;
-
-	subject = up_polkit_get_subject (priv->polkit, context);
-	if (subject == NULL)
-		goto out;
-
-	error = NULL;
-	ret = up_polkit_is_allowed (priv->polkit, subject, "org.freedesktop.upower.hibernate", &error);
-	if (error) {
-		dbus_g_method_return_error (context, error);
-		g_error_free (error);
-	}
-	else {
-		dbus_g_method_return (context, ret);
-	}
-
-out:
-	if (subject != NULL)
-		g_object_unref (subject);
 	return TRUE;
 #else
+        GError *error;
 	/* just return an error */
 	error = g_error_new_literal (UP_DAEMON_ERROR,
 				     UP_DAEMON_ERROR_GENERAL,
@@ -1144,7 +1069,6 @@ up_daemon_init (UpDaemon *daemon)
 	gchar *filename;
 
 	daemon->priv = UP_DAEMON_GET_PRIVATE (daemon);
-	daemon->priv->polkit = up_polkit_new ();
 	daemon->priv->config = up_config_new ();
 	daemon->priv->lid_is_present = FALSE;
 	daemon->priv->is_docked = FALSE;
@@ -1477,7 +1401,6 @@ up_daemon_finalize (GObject *object)
 	if (priv->connection != NULL)
 		dbus_g_connection_unref (priv->connection);
 	g_object_unref (priv->power_devices);
-	g_object_unref (priv->polkit);
 	g_object_unref (priv->config);
 	g_object_unref (priv->backend);
 #ifdef ENABLE_DEPRECATED

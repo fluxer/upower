@@ -15,7 +15,6 @@
 @SET_MAKE@
 
 
-
 VPATH = @srcdir@
 am__is_gnu_make = test -n '$(MAKEFILE_LIST)' && test -n '$(MAKELEVEL)'
 am__make_running_with_option = \
@@ -80,8 +79,6 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@HAVE_INTROSPECTION_TRUE@am__append_1 = UPowerGlib-1.0.gir
-@HAVE_INTROSPECTION_TRUE@am__append_2 = $(gir_DATA) $(typelib_DATA)
 subdir = libupower-glib
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(srcdir)/up-version.h.in $(top_srcdir)/build-aux/depcomp \
@@ -131,8 +128,7 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(girdir)" \
-	"$(DESTDIR)$(typelibdir)" \
+am__installdirs = "$(DESTDIR)$(libdir)" \
 	"$(DESTDIR)$(libupower_glib_includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
@@ -195,7 +191,6 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-DATA = $(gir_DATA) $(typelib_DATA)
 HEADERS = $(libupower_glib_include_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
@@ -283,14 +278,6 @@ INTLTOOL_V_MERGE_OPTIONS = @INTLTOOL_V_MERGE_OPTIONS@
 INTLTOOL__v_MERGE_ = @INTLTOOL__v_MERGE_@
 INTLTOOL__v_MERGE_0 = @INTLTOOL__v_MERGE_0@
 INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
-INTROSPECTION_CFLAGS = @INTROSPECTION_CFLAGS@
-INTROSPECTION_COMPILER = @INTROSPECTION_COMPILER@
-INTROSPECTION_GENERATE = @INTROSPECTION_GENERATE@
-INTROSPECTION_GIRDIR = @INTROSPECTION_GIRDIR@
-INTROSPECTION_LIBS = @INTROSPECTION_LIBS@
-INTROSPECTION_MAKEFILE = @INTROSPECTION_MAKEFILE@
-INTROSPECTION_SCANNER = @INTROSPECTION_SCANNER@
-INTROSPECTION_TYPELIBDIR = @INTROSPECTION_TYPELIBDIR@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBICONV = @LIBICONV@
@@ -332,8 +319,6 @@ PIE_LDFLAGS = @PIE_LDFLAGS@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
-POLKIT_CFLAGS = @POLKIT_CFLAGS@
-POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
 RANLIB = @RANLIB@
 RELRO_LDFLAGS = @RELRO_LDFLAGS@
@@ -423,7 +408,7 @@ AM_CPPFLAGS = \
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
-INTROSPECTION_GIRS = $(am__append_1)
+INTROSPECTION_GIRS = 
 INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
 INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
 lib_LTLIBRARIES = \
@@ -470,18 +455,7 @@ libupower_glib_la_CFLAGS = \
 EXTRA_DIST = \
 	up-version.h.in
 
-CLEANFILES = $(BUILT_SOURCES) $(am__append_2)
-@HAVE_INTROSPECTION_TRUE@introspection_sources = $(libupower_glib_include_HEADERS) $(libupower_glib_la_SOURCES)
-@HAVE_INTROSPECTION_TRUE@UPowerGlib_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0
-@HAVE_INTROSPECTION_TRUE@UPowerGlib_1_0_gir_CFLAGS = $(AM_CPPFLAGS)
-@HAVE_INTROSPECTION_TRUE@UPowerGlib_1_0_gir_SCANNERFLAGS = --identifier-prefix=Up --symbol-prefix=up_ --warn-all --add-include-path=$(srcdir)
-@HAVE_INTROSPECTION_TRUE@UPowerGlib_1_0_gir_LIBS = libupower-glib.la
-@HAVE_INTROSPECTION_TRUE@UPowerGlib_1_0_gir_FILES = $(introspection_sources)
-@HAVE_INTROSPECTION_TRUE@UPowerGlib_1_0_gir_NAMESPACE = UPowerGlib
-@HAVE_INTROSPECTION_TRUE@girdir = $(datadir)/gir-1.0
-@HAVE_INTROSPECTION_TRUE@gir_DATA = $(INTROSPECTION_GIRS)
-@HAVE_INTROSPECTION_TRUE@typelibdir = $(libdir)/girepository-1.0
-@HAVE_INTROSPECTION_TRUE@typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
+CLEANFILES = $(BUILT_SOURCES)
 all: all-am
 
 .SUFFIXES:
@@ -654,48 +628,6 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-girDATA: $(gir_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(gir_DATA)'; test -n "$(girdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(girdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(girdir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(girdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(girdir)" || exit $$?; \
-	done
-
-uninstall-girDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(gir_DATA)'; test -n "$(girdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(girdir)'; $(am__uninstall_files_from_dir)
-install-typelibDATA: $(typelib_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(typelib_DATA)'; test -n "$(typelibdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(typelibdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(typelibdir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(typelibdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(typelibdir)" || exit $$?; \
-	done
-
-uninstall-typelibDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(typelib_DATA)'; test -n "$(typelibdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(typelibdir)'; $(am__uninstall_files_from_dir)
 install-libupower_glib_includeHEADERS: $(libupower_glib_include_HEADERS)
 	@$(NORMAL_INSTALL)
 	@list='$(libupower_glib_include_HEADERS)'; test -n "$(libupower_glib_includedir)" || list=; \
@@ -802,9 +734,9 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS)
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(girdir)" "$(DESTDIR)$(typelibdir)" "$(DESTDIR)$(libupower_glib_includedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(libupower_glib_includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -861,8 +793,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-girDATA install-libupower_glib_includeHEADERS \
-	install-typelibDATA
+install-data-am: install-libupower_glib_includeHEADERS
 
 install-dvi: install-dvi-am
 
@@ -908,8 +839,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-girDATA uninstall-libLTLIBRARIES \
-	uninstall-libupower_glib_includeHEADERS uninstall-typelibDATA
+uninstall-am: uninstall-libLTLIBRARIES \
+	uninstall-libupower_glib_includeHEADERS
 
 .MAKE: install-am install-strip
 
@@ -919,21 +850,18 @@ uninstall-am: uninstall-girDATA uninstall-libLTLIBRARIES \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-girDATA install-html install-html-am \
-	install-info install-info-am install-libLTLIBRARIES \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libLTLIBRARIES \
 	install-libupower_glib_includeHEADERS install-man install-pdf \
 	install-pdf-am install-ps install-ps-am install-strip \
-	install-typelibDATA installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
-	uninstall-girDATA uninstall-libLTLIBRARIES \
-	uninstall-libupower_glib_includeHEADERS uninstall-typelibDATA
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am uninstall-libLTLIBRARIES \
+	uninstall-libupower_glib_includeHEADERS
 
 
 -include $(INTROSPECTION_MAKEFILE)
-
-@HAVE_INTROSPECTION_TRUE@UPowerGlib-1.0.gir: libupower-glib.la
 
 clean-local:
 	rm -f *~

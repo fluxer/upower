@@ -22,7 +22,6 @@ AM_CPPFLAGS = \
 	$(GIO_CFLAGS)						\
 	$(DBUS_GLIB_CFLAGS)					\
 	$(GUDEV_CFLAGS)						\
-	$(POLKIT_CFLAGS)					\
 	$(GLIB_CFLAGS)
 
 UPOWER_LIBS = $(top_builddir)/libupower-glib/libupower-glib.la
@@ -68,8 +67,6 @@ dbusif_DATA =							\
 	org.freedesktop.UPower.Wakeups.xml
 
 upowerd_SOURCES =						\
-	up-polkit.h						\
-	up-polkit.c						\
 	up-daemon.h						\
 	up-daemon.c						\
 	up-device.h						\
@@ -100,7 +97,6 @@ upowerd_LDADD =							\
 	$(USB_LIBS)						\
 	$(GIO_LIBS)						\
 	$(DBUS_GLIB_LIBS)					\
-	$(POLKIT_LIBS)						\
 	$(UPOWER_LIBS)
 
 if BACKEND_TYPE_DUMMY
@@ -153,8 +149,6 @@ check_PROGRAMS =						\
 
 up_self_test_SOURCES =						\
 	up-self-test.c						\
-	up-polkit.h						\
-	up-polkit.c						\
 	up-config.h						\
 	up-config.c						\
 	up-daemon.h						\
@@ -181,7 +175,6 @@ up_self_test_LDADD =						\
 	$(GLIB_LIBS)						\
 	$(GIO_CFLAGS)						\
 	$(DBUS_GLIB_LIBS)					\
-	$(POLKIT_LIBS)						\
 	$(UPOWER_LIBS)
 
 up_self_test_CFLAGS = $(AM_CFLAGS) $(WARNINGFLAGS_C)

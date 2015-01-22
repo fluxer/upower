@@ -35,7 +35,6 @@
 #include "up-qos.h"
 #include "up-marshal.h"
 #include "up-daemon.h"
-#include "up-polkit.h"
 #include "up-qos-item.h"
 #include "up-qos-glue.h"
 #include "up-types.h"
@@ -61,7 +60,6 @@ struct UpQosPrivate
 	gint			 fd[UP_QOS_KIND_LAST];
 	gint			 last[UP_QOS_KIND_LAST];
 	gint			 minimum[UP_QOS_KIND_LAST];
-	UpPolkit		*polkit;
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy;
 };
@@ -246,12 +244,10 @@ up_qos_request_latency (UpQos *qos, const gchar *type_text, gint value, gboolean
 {
 	UpQosItem *item;
 	gchar *sender = NULL;
-	const gchar *auth;
 	gchar *cmdline = NULL;
 	GError *error;
 	guint uid;
 	gint pid;
-	PolkitSubject *subject = NULL;
 	gboolean retval;
 	UpQosKind type;
 
@@ -268,37 +264,6 @@ up_qos_request_latency (UpQos *qos, const gchar *type_text, gint value, gboolean
 	sender = dbus_g_method_get_sender (context);
 	if (sender == NULL) {
 		error = g_error_new (UP_DAEMON_ERROR, UP_DAEMON_ERROR_GENERAL, "no DBUS sender");
-		dbus_g_method_return_error (context, error);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* get the subject */
-	subject = up_polkit_get_subject (qos->priv->polkit, context);
-	if (subject == NULL)
-		goto out;
-
-	/* check auth */
-	if (persistent)
-		auth = "org.freedesktop.upower.qos.request-latency-persistent";
-	else
-		auth = "org.freedesktop.upower.qos.request-latency";
-	if (!up_polkit_check_auth (qos->priv->polkit, subject, auth, context))
-		goto out;
-
-	/* get uid */
-	retval = up_polkit_get_uid (qos->priv->polkit, subject, &uid);
-	if (!retval) {
-		error = g_error_new (UP_DAEMON_ERROR, UP_DAEMON_ERROR_GENERAL, "cannot get UID");
-		dbus_g_method_return_error (context, error);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* get pid */
-	retval = up_polkit_get_pid (qos->priv->polkit, subject, &pid);
-	if (!retval) {
-		error = g_error_new (UP_DAEMON_ERROR, UP_DAEMON_ERROR_GENERAL, "cannot get PID");
 		dbus_g_method_return_error (context, error);
 		g_error_free (error);
 		goto out;
@@ -337,8 +302,6 @@ up_qos_request_latency (UpQos *qos, const gchar *type_text, gint value, gboolean
 	up_qos_latency_perhaps_changed (qos, type);
 	dbus_g_method_return (context, up_qos_item_get_cookie (item));
 out:
-	if (subject != NULL)
-		g_object_unref (subject);
 	g_free (sender);
 	g_free (cmdline);
 }
@@ -354,7 +317,6 @@ up_qos_cancel_request (UpQos *qos, guint cookie, DBusGMethodInvocation *context)
 	UpQosItem *item;
 	GError *error;
 	gchar *sender = NULL;
-	PolkitSubject *subject = NULL;
 	UpQosKind item_kind;
 
 	/* find the correct cookie */
@@ -376,15 +338,6 @@ up_qos_cancel_request (UpQos *qos, guint cookie, DBusGMethodInvocation *context)
 		goto out;
 	}
 
-	/* are we not the sender? */
-	if (g_strcmp0 (sender, up_qos_item_get_sender (item)) != 0) {
-		subject = up_polkit_get_subject (qos->priv->polkit, context);
-		if (subject == NULL)
-			goto out;
-		if (!up_polkit_check_auth (qos->priv->polkit, subject, "org.freedesktop.upower.qos.cancel-request", context))
-			goto out;
-	}
-
 	g_debug ("Clear #%i", cookie);
 
 	/* remove object from list */
@@ -398,8 +351,6 @@ up_qos_cancel_request (UpQos *qos, guint cookie, DBusGMethodInvocation *context)
 
 	dbus_g_method_return (context, NULL);
 out:
-	if (subject != NULL)
-		g_object_unref (subject);
 	g_free (sender);
 }
 
@@ -562,7 +513,6 @@ up_qos_init (UpQos *qos)
 	GError *error = NULL;
 
 	qos->priv = UP_QOS_GET_PRIVATE (qos);
-	qos->priv->polkit = up_polkit_new ();
 	qos->priv->data = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	/* TODO: need to load persistent values */
 
@@ -622,8 +572,6 @@ up_qos_finalize (GObject *object)
 	}
 	g_ptr_array_unref (qos->priv->data);
 	g_object_unref (qos->priv->proxy);
-
-	g_object_unref (qos->priv->polkit);
 
 	G_OBJECT_CLASS (up_qos_parent_class)->finalize (object);
 }

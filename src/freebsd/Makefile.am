@@ -6,7 +6,6 @@ AM_CPPFLAGS = \
 	-DG_LOG_DOMAIN=\"UPower-Freebsd\"			\
 	-I$(top_srcdir)/libupower-glib				\
 	$(DBUS_GLIB_CFLAGS)					\
-	$(POLKIT_CFLAGS)					\
 	$(GLIB_CFLAGS)
 
 if BACKEND_TYPE_FREEBSD

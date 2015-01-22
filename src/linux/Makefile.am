@@ -10,7 +10,6 @@ AM_CPPFLAGS = \
 	$(GIO_CFLAGS)						\
 	$(DBUS_GLIB_CFLAGS)					\
 	$(GUDEV_CFLAGS)						\
-	$(POLKIT_CFLAGS)					\
 	$(GLIB_CFLAGS)						\
 	$(IDEVICE_CFLAGS)					\
 	$(NULL)

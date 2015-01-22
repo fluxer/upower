@@ -24,8 +24,6 @@ AM_MAINTAINER_MODE([enable])
 # enable nice build output on automake1.11
 AM_SILENT_RULES([yes])
 
-GOBJECT_INTROSPECTION_CHECK([0.9.9])
-
 # use this in up-version.h
 UP_MAJOR_VERSION=up_major_version
 UP_MINOR_VERSION=up_minor_version
@@ -155,7 +153,6 @@ AC_SUBST([RELRO_LDFLAGS])
 PKG_CHECK_MODULES(GLIB, [glib-2.0 >= 2.21.5])
 PKG_CHECK_MODULES(DBUS, [dbus-1 >= 1.0])
 PKG_CHECK_MODULES(DBUS_GLIB, [dbus-glib-1 >= 0.76])
-PKG_CHECK_MODULES(POLKIT, polkit-gobject-1 >= 0.97)
 PKG_CHECK_MODULES(GIO, [gio-2.0 >= 2.16.1])
 
 dnl ====================================================================

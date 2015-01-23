@@ -247,9 +247,10 @@ up_qos_request_latency (UpQos *qos, const gchar *type_text, gint value, gboolean
 	gchar *cmdline = NULL;
 	GError *error;
 	guint uid;
-	gint pid;
-	gboolean retval;
+	gint pid = 0;
 	UpQosKind type;
+	DBusGProxy *proxy = NULL;
+	DBusConnection *connection;
 
 	/* get correct data */
 	type = up_qos_kind_from_string (type_text);
@@ -264,6 +265,42 @@ up_qos_request_latency (UpQos *qos, const gchar *type_text, gint value, gboolean
 	sender = dbus_g_method_get_sender (context);
 	if (sender == NULL) {
 		error = g_error_new (UP_DAEMON_ERROR, UP_DAEMON_ERROR_GENERAL, "no DBUS sender");
+		dbus_g_method_return_error (context, error);
+		g_error_free (error);
+		goto out;
+	}
+	
+	proxy = dbus_g_proxy_new_for_name_owner (qos->priv->connection,
+						"org.freedesktop.DBus",
+                                                "/org/freedesktop/DBus/Bus",
+                                                "org.freedesktop.DBus", &error);
+	if (proxy == NULL) {
+		g_warning ("DBUS error: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* get uid */
+	connection = dbus_g_connection_get_connection (qos->priv->connection);
+	uid = dbus_bus_get_unix_user (connection, sender, NULL);
+
+	if (!uid) {
+		error = g_error_new (UP_DAEMON_ERROR, UP_DAEMON_ERROR_GENERAL, "cannot get UID");
+		dbus_g_method_return_error (context, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* get pid from DBus (quite slow) */
+	pid = dbus_g_proxy_call (proxy, "GetConnectionUnixProcessID", &error,
+				G_TYPE_STRING, sender,
+				G_TYPE_INVALID,
+				G_TYPE_UINT, pid,
+				G_TYPE_INVALID);
+
+	if (!pid) {
+		g_warning ("failed to get pid: %s", error->message);
+		error = g_error_new (UP_DAEMON_ERROR, UP_DAEMON_ERROR_GENERAL, "cannot get PID");
 		dbus_g_method_return_error (context, error);
 		g_error_free (error);
 		goto out;

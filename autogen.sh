@@ -24,5 +24,5 @@ which intltoolize > /dev/null || {
 
 mkdir -p m4
 autoreconf -fi
-intltoolize -f
+intltoolize -f -c
 ./configure $@

@@ -51,7 +51,7 @@
 
 #ifdef ENABLE_DEPRECATED
 
-#define LOGIND_AVAILABLE() (access("/run/systemd/seats/", F_OK) >= 0)
+#define LOGIND_AVAILABLE() (FALSE)
 
 #define SD_HIBERNATE_COMMAND	"gdbus call --system --dest org.freedesktop.login1 --object-path /org/freedesktop/login1 --method org.freedesktop.login1.Manager.Hibernate 'true'"
 #define SD_SUSPEND_COMMAND	"gdbus call --system --dest org.freedesktop.login1 --object-path /org/freedesktop/login1 --method org.freedesktop.login1.Manager.Suspend 'true'"

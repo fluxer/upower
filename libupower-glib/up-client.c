@@ -725,6 +725,9 @@ up_client_get_property (GObject *object,
 
 	up_client_get_properties_sync (client, NULL, NULL);
 
+	if (client->priv->proxy == NULL)
+                return;
+
 	switch (prop_id) {
 	case PROP_DAEMON_VERSION:
 		g_value_set_string (value, client->priv->daemon_version);
